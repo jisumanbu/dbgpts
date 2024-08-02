@@ -1,0 +1,13 @@
+[flow]
+label = "Operation Copilot"
+name = "cosla_copilot"
+version = "0.1.0"
+description = "A AI copilot for operations in Cosla LLC."
+authors = []
+#definition_type = "json"
+definition_type = "python"
+
+[python_config]
+
+[json_config]
+#file_path = "definition/flow_definition.json"

@@ -1,0 +1,2 @@
+include dbgpts.toml
+include cosla_copilot/definition/*.json
