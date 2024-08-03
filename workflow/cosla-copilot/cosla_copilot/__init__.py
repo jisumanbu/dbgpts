@@ -36,12 +36,19 @@ from .chat_database import (
     ChatDatabaseOutputParserOperator,
 )
 from .chat_knowledge import ChatKnowledgeOperator
+from .chat_fitting_price import QueryFittingPriceOperator
 
 _DEFAULT_INTENT_DEFINITIONS = """**********************************
+intent: Query Fitting Price
+task_name: query_fitting_price
+description_en: Used for querying fitting price conversation, no need to fill any slots
+description_zh: 用于查询和展示配件价格，无需填充任何槽位
+slots: no need to fill any slots
+**********************************
 intent: Chat With Database
 task_name: chat_database
-description_en: Used for database conversation, all conversations related to data queries, SQL generation, etc. will be matched to database conversations
-description_zh: 用于数据库对话的意图，所有与数据查询SQL生成等相关的对话都会匹配到数据库对话
+description_en: Used for database conversation except fitting price inquery, all conversations related to data queries, SQL generation, etc. will be matched to database conversations
+description_zh: 用于除查询配件价格外的数据库对话的意图，所有与数据查询SQL生成等相关的对话都会匹配到数据库对话
 slots: 
 - Database Name(database_name): The name of the database
 **********************************
@@ -193,7 +200,7 @@ class MyIntentDetectionOperator(BaseConversationOperator, IntentDetectionOperato
     def parse_messages(self, request: ModelRequest) -> List[ModelMessage]:
         messages = request.get_messages()
         history_messages = messages[:-1]
-        return history_messages[-self.history_count :] + [messages[-1]]
+        return history_messages[-self.history_count:] + [messages[-1]]
 
     async def map(self, input_value: ModelRequest) -> ModelRequest:
         request = await super().map(input_value)
@@ -304,6 +311,8 @@ with DAG("dbgpts_all_in_one_entrance_intent_detection_dag") as dag:
     sql_parse_task = ChatDatabaseOutputParserOperator()
     sql_chart_task = ChatDatabaseChartOperator()
 
+    query_fitting_price = QueryFittingPriceOperator()
+
     chat_knowledge_task = ChatKnowledgeOperator()
     end_task = EndOperator()
     join_task = FinalJoinOperator()
@@ -312,11 +321,19 @@ with DAG("dbgpts_all_in_one_entrance_intent_detection_dag") as dag:
 
     # Chat normal task
     (intent_detection_task >> chat_normal_task >> StreamingLLMOperator(llm_client) >> join_task)
+    # Query Fitting Price
+    (
+            intent_detection_task
+            >> query_fitting_price
+            >> join_task
+    )
     # Chat database task
     (
             intent_detection_task
+            # generate SQL by LLM
             >> chat_database_task
             >> LLMOperator(llm_client)
+            # execute SQL
             >> sql_parse_task
             >> sql_chart_task
             >> join_task

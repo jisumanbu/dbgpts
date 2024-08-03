@@ -11,12 +11,12 @@ async def main():
 
     req = CommonLLMHttpRequestBody(
         model="qwen-max",
-        messages="查询每个用户的订单数据, 数据库是default_sqlite",
+        messages="查询配件价格",
         conv_uid="123456",
         stream=True,
         extra={
             # "space": "my_knowledge_space",
-            "db_name": "dbgpt_test",
+            # "db_name": "dbgpt_test",
             # "tmp_dir_path": "/Users/jliu/git/ai/dbgpts/output",
             # "embedding_model": "/Users/jliu/git/ai/DB-GPT/models/text2vec-large-chinese/",
         },
