@@ -10,8 +10,10 @@ async def main():
     from cosla_copilot import dag
 
     req = CommonLLMHttpRequestBody(
-        model="qwen-max",
-        messages="查询配件价格",
+        # model="tongyi_proxyllm",
+        model="gpt-3.5-turbo",
+        # messages="查询配件价格, 维保单号：712024072916256345， 配件：齿轮油/欧曼原厂/85W-90",
+        messages="查询维保单（712024072916256345）用到的所有配件",
         conv_uid="123456",
         stream=True,
         extra={

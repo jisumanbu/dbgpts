@@ -74,7 +74,8 @@ class ChatDatabaseOperator(MapOperator[ModelRequest, ModelRequest]):
         ic: IntentDetectionResponse = input_value.context.extra.get("intent_detection")
         db_name = ic.slots.get("database_name")
         if not db_name:
-            raise ValueError("Database name is required.")
+            db_name = "dw_shinwell"
+            # raise ValueError("Database name is required.")
 
         await self.current_dag_context.save_to_share_data(
             _SHARE_DATA_DATABASE_NAME_KEY, db_name

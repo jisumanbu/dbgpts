@@ -40,29 +40,26 @@ from .chat_fitting_price import QueryFittingPriceOperator
 
 _DEFAULT_INTENT_DEFINITIONS = """**********************************
 intent: Query Fitting Price
-task_name: query_fitting_price
-description_en: Used for querying fitting price conversation, no need to fill any slots
-description_zh: 用于查询和展示配件价格，无需填充任何槽位
-slots: no need to fill any slots
+task_name: query_fitting_price_sql_executor
+description_zh: 用于查询配件价格（历史最低价、最高价、平均价）。你必须严谨地识别这个意图，只有当用户直接地同时提及 "配件" 与 "价格" 两个关键字时，你才可以匹配到该意图
+slots: 
+- Maintenance Order: 维保单号
+- Fitting Name: 配件名称
 **********************************
 intent: Chat With Database
 task_name: chat_database
-description_en: Used for database conversation except fitting price inquery, all conversations related to data queries, SQL generation, etc. will be matched to database conversations
-description_zh: 用于除查询配件价格外的数据库对话的意图，所有与数据查询SQL生成等相关的对话都会匹配到数据库对话
+description_zh: 用于除查询配件价格外的数据库对话的意图（配件的使用情况也匹配到此意图），所有与数据查询SQL生成等相关的对话都会匹配到数据库对话。槽位database_name默认为：dw_shinwell
 slots: 
-- Database Name(database_name): The name of the database
+- Database Name(database_name): The name of the database, default value is dw_shinwell
 **********************************
 intent: Chat With Knowledge
 task_name: chat_knowledge
 description_zh: 用于知识库对话的意图, 当你无法直接回答用户问题或者不知道如何回答时，可以将用户的问题匹配到知识库对话
-description_en: Used for knowledge base conversation, when you can't answer the user's question directly or don't know how to answer, you can match the user's question to the knowledge base conversation
 slots: 
 - Knowledge Name(knowledge_name): The name of the knowledge base
 **********************************
-**********************************
 intent: Normal Chat
 task_name: chat_normal
-description_en: Chat with user normally, no need to fill any slots, when no other intent can be matched, it will be matched to normal chat intent
 description_zh: 与用户正常聊天，无需填充任何槽位，当无法匹配到其他意图时，会匹配到正常聊天意图
 slots: no need to fill any slots
 """
@@ -177,7 +174,7 @@ class RequestHandleOperator(
         return ModelRequest.build_request(input_value.model, messages)
 
 
-class MyIntentDetectionOperator(BaseConversationOperator, IntentDetectionOperator):
+class CustIntentDetectionOperator(BaseConversationOperator, IntentDetectionOperator):
     def __init__(
             self,
             intent_definitions: str,
@@ -193,9 +190,9 @@ class MyIntentDetectionOperator(BaseConversationOperator, IntentDetectionOperato
         # 从kwargs中获取llm_client
         self._llm_client: LLMClient = kwargs.get("llm_client")
 
-    @property
-    def llm_client(self) -> LLMClient:
-        return self._llm_client
+    # @property
+    # def llm_client(self) -> LLMClient:
+    #     return self._llm_client
 
     def parse_messages(self, request: ModelRequest) -> List[ModelMessage]:
         messages = request.get_messages()
@@ -291,16 +288,17 @@ class FinalJoinOperator(JoinOperator[str]):
         super().__init__(join_func, can_skip_in_branch=False, **kwargs)
 
 
-with DAG("dbgpts_all_in_one_entrance_intent_detection_dag") as dag:
+with DAG("dbgpts_cosla_copilot_intent_detection_dag") as dag:
     trigger = CommonLLMHttpTrigger(
-        "/dbgpts/all-in-one-entrance",
+        "/dbgpts/cosla-copilot",
         methods="POST",
         streaming_predict_func=lambda x: x.stream,
     )
-    llm_client = TongyiLLMClient(model=os.getenv("MODEL"), api_key=os.getenv("OPENAI_API_KEY"))
+    # llm_client = TongyiLLMClient(model=os.getenv("MODEL"), api_key=os.getenv("OPENAI_API_KEY"))
+    llm_client = None
     storage = InMemoryStorage()
     request_handle_task = RequestHandleOperator(storage)
-    intent_task = MyIntentDetectionOperator(
+    intent_task = CustIntentDetectionOperator(
         intent_definitions=_DEFAULT_INTENT_DEFINITIONS,
         examples=EXAMPLES_STRING,
         llm_client=llm_client,
