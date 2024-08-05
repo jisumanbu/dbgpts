@@ -45,4 +45,8 @@ class QueryFittingPriceOperator(MapOperator[ModelRequest, str]):
 
         standard_price_df = await self.blocking_func_to_async(database.run_to_df, query_standard_fitting_price.format(maint_order=maint_order, fitting_name=fitting_name))
 
-        return standard_price_df.iloc[0]['standardPrice'] + "\n" + view
+        if standard_price_df.empty:
+            standard_price = "未找到该配件的型号库标准价"
+        else:
+            standard_price = standard_price_df.iloc[0]['standardPrice']
+        return standard_price + "\n" + view

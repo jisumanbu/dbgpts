@@ -8,7 +8,7 @@ query_price_sql_template = """
                     FROM dwd_maint_order_accepted_cost_fee_f
                     WHERE maint_order_no = '{maint_order}'
                       and concat_ws('/', fitting_name, fitting_brand, fitting_model_name) = '{fitting_name}')
-SELECT 'a. 当前维保单对应的服务站该型号的历史最低价、平均价、最高价'            as 维度,
+SELECT '同品牌同型号，当前服务站'            as 维度,
        dmcf.service_station_city                                              as 城市,
        dmcf.service_station_name                                              as 服务站,
        dmcf.fitting_name                                                      as 配件,
@@ -28,7 +28,7 @@ WHERE dmcf.completed_time > '2023-01-01'
   AND dmcf.fitting_brand = (select fitting_brand from conditions)
   AND dmcf.fitting_model_name = (select fitting_model_name from conditions)
 union all
-SELECT 'b. 当前维保单对应的服务站该配件同品牌的不同型号的历史最低价、平均价、最高价' as 维度,
+SELECT '同品牌不同型号，当前服务站' as 维度,
        dmcf.service_station_city                                                   as 城市,
        dmcf.service_station_name                                                   as 服务站,
        dmcf.fitting_name                                                           as 配件,
@@ -48,7 +48,7 @@ WHERE dmcf.completed_time > '2023-01-01'
   AND dmcf.fitting_brand = (select fitting_brand from conditions)
   AND dmcf.fitting_model_name != (select fitting_model_name from conditions)
 union all
-SELECT 'c. 当前维保单对应的服务站同市内的服务站该型号的历史最低价、平均价、最高价' as 维度,
+SELECT '同品牌同型号，同市' as 维度,
        dmcf.service_station_city                                                 as 城市,
        ''                                                                        as 服务站,
        dmcf.fitting_name                                                         as 配件,
@@ -68,7 +68,7 @@ WHERE dmcf.completed_time > '2023-01-01'
   AND dmcf.fitting_brand = (select fitting_brand from conditions)
   AND dmcf.fitting_model_name = (select fitting_model_name from conditions)
 union all
-SELECT 'd. 当前维保单对应的服务站同市内的服务站该配件同品牌的不同型号的的历史最低价、平均价、最高价' as 维度,
+SELECT '同品牌不同型号，同市' as 维度,
        dmcf.service_station_city                                                                   as 城市,
        ''                                                                                          as 服务站,
        dmcf.fitting_name                                                                           as 配件,
@@ -89,7 +89,7 @@ WHERE dmcf.completed_time > '2023-01-01'
   AND dmcf.fitting_model_name != (select fitting_model_name from conditions)
 union all
 
-SELECT 'e. 该型号系统内的历史最低价、平均价、最高价'                            as 维度,
+SELECT '同品牌同型号，所有'                            as 维度,
        ''                                                                     as 城市,
        ''                                                                     as 服务站,
        dmcf.fitting_name                                                      as 配件,
@@ -108,7 +108,7 @@ WHERE dmcf.completed_time > '2023-01-01'
   AND dmcf.fitting_brand = (select fitting_brand from conditions)
   AND dmcf.fitting_model_name = (select fitting_model_name from conditions)
 union all
-SELECT 'f. 该配件同品牌的不同型号的历史最低价、平均价、最高价'                  as 维度,
+SELECT '同品牌不同型号，所有'                  as 维度,
        ''                                                                     as 城市,
        ''                                                                     as 服务站,
        dmcf.fitting_name                                                      as 配件,
