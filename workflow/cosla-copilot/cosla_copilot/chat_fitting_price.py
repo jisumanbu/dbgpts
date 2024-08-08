@@ -38,7 +38,7 @@ class QueryFittingPriceOperator(MapOperator[ModelRequest, str]):
         fitting_metadata_df = await self.blocking_func_to_async(oltp.run_to_df, query_fitting_metadata.format(maint_order=maint_order, fitting_name=fitting_name))
 
         if fitting_metadata_df.empty:
-            raise ValueError("未找到配件相关元数据()")
+            raise ValueError("未找到配件相关信息")
 
         fitting_metadata = fitting_metadata_df.iloc[0].to_dict()
         query_price_sql = query_price_sql_template.format(**fitting_metadata)
