@@ -40,7 +40,8 @@ class QueryFittingPriceOperator(MapOperator[ModelRequest, str]):
         if fitting_metadata_df.empty:
             raise ValueError("未找到配件相关元数据()")
 
-        query_price_sql = query_price_sql_template.format(**fitting_metadata_df.iloc[0].to_dict())
+        fitting_metadata = fitting_metadata_df.iloc[0].to_dict()
+        query_price_sql = query_price_sql_template.format(**fitting_metadata)
         print(f"{query_price_sql}")
 
         olap: RDBMSConnector = cfg.local_db_manager.get_connector(dw_shinwell)
@@ -52,7 +53,7 @@ class QueryFittingPriceOperator(MapOperator[ModelRequest, str]):
         }
         print(chart_to_display)
 
-        standard_price_df = await self.blocking_func_to_async(olap.run_to_df, query_standard_fitting_price.format(maint_order=maint_order, fitting_name=fitting_name))
+        standard_price_df = await self.blocking_func_to_async(olap.run_to_df, query_standard_fitting_price.format(**fitting_metadata))
         if standard_price_df.empty:
             standard_price = "未找到该配件的型号库标准价"
         else:

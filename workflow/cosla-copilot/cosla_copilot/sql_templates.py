@@ -1,5 +1,6 @@
 query_fitting_metadata = """
 select a.maint_order_no,
+       msf0.fitting_id,
        hf.fitting_name         AS fitting_name,
        msf0.fitting_brand_name AS fitting_brand,
        hf.fitting_model_name   AS fitting_model_name,
@@ -149,20 +150,9 @@ ORDER BY 维度
 """
 
 query_standard_fitting_price = """
-with conditions as (SELECT service_station_city,
-                           service_agency_id,
-                           maint_order_no,
-                           fitting_id,
-                           fitting_name,
-                           fitting_brand,
-                           fitting_model_name,
-                           fitting_model_id
-                    FROM dwd_maint_order_accepted_cost_fee_f
-                    WHERE maint_order_no = '{maint_order}'
-                      and concat_ws('/', fitting_name, fitting_brand, fitting_model_name) = '{fitting_name}')
 select concat('型号库标准价：￥', standard_price) as standardPrice
 from dim_standard_fitting_model_scd
-where fitting_id = (select fitting_id from conditions)
-  and fitting_brand_name = (select fitting_brand from conditions)
-  and fitting_model_name = (select fitting_model_name from conditions)
+where fitting_id = '{fitting_id}'
+  and fitting_brand_name = '{fitting_brand}'
+  and fitting_model_name = '{fitting_model_name}'
 """
