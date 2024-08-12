@@ -29,17 +29,17 @@ where a.maint_order_no = '{maint_order}'
 
 query_price_sql_template = """
 SELECT '同品牌同型号，当前服务站'                                              as 维度,
-       dmcf.service_station_city                                              as 城市,
-       dmcf.service_station_name                                              as 服务站,
-       dmcf.fitting_name                                                      as 配件,
-       dmcf.fitting_brand                                                     as 品牌,
-       dmcf.fitting_model_name                                                as 型号,
        cast(
                min(dmcf.fee_price / dmcf.accepted_count) AS DECIMAL(18, 2))   AS 最低价,
        cast((
            sum(dmcf.fee_price) / sum(dmcf.accepted_count)) AS DECIMAL(18, 2)) AS 平均价,
        cast(
-               max(dmcf.fee_price / dmcf.accepted_count) AS DECIMAL(18, 2))   AS 最高价
+               max(dmcf.fee_price / dmcf.accepted_count) AS DECIMAL(18, 2))   AS 最高价,
+       dmcf.service_station_city                                              as 城市,
+       dmcf.service_station_name                                              as 服务站,
+       dmcf.fitting_name                                                      as 配件,
+       dmcf.fitting_brand                                                     as 品牌,
+       dmcf.fitting_model_name                                                as 型号
 FROM dwd_maint_order_accepted_cost_fee_f dmcf
 WHERE dmcf.completed_time > '2023-01-01'
   AND dmcf.maint_fee_type = '配件费'
@@ -49,17 +49,17 @@ WHERE dmcf.completed_time > '2023-01-01'
   AND dmcf.fitting_model_name = '{fitting_model_name}'
 union all
 SELECT '同品牌不同型号，当前服务站'                                            as 维度,
-       dmcf.service_station_city                                              as 城市,
-       dmcf.service_station_name                                              as 服务站,
-       dmcf.fitting_name                                                      as 配件,
-       dmcf.fitting_brand                                                     as 品牌,
-       concat('非', dmcf.fitting_model_name)                                  as 型号,
        cast(
                min(dmcf.fee_price / dmcf.accepted_count) AS DECIMAL(18, 2))   AS 最低价,
        cast((
            sum(dmcf.fee_price) / sum(dmcf.accepted_count)) AS DECIMAL(18, 2)) AS 平均价,
        cast(
-               max(dmcf.fee_price / dmcf.accepted_count) AS DECIMAL(18, 2))   AS 最高价
+               max(dmcf.fee_price / dmcf.accepted_count) AS DECIMAL(18, 2))   AS 最高价,
+       dmcf.service_station_city                                              as 城市,
+       dmcf.service_station_name                                              as 服务站,
+       dmcf.fitting_name                                                      as 配件,
+       dmcf.fitting_brand                                                     as 品牌,
+       concat('非', dmcf.fitting_model_name)                                  as 型号
 FROM dwd_maint_order_accepted_cost_fee_f dmcf
 WHERE dmcf.completed_time > '2023-01-01'
   AND dmcf.maint_fee_type = '配件费'
@@ -69,17 +69,17 @@ WHERE dmcf.completed_time > '2023-01-01'
   AND dmcf.fitting_model_name != '{fitting_model_name}'
 union all
 SELECT '同品牌同型号，同市'                                                    as 维度,
-       dmcf.service_station_city                                              as 城市,
-       ''                                                                     as 服务站,
-       dmcf.fitting_name                                                      as 配件,
-       dmcf.fitting_brand                                                     as 品牌,
-       dmcf.fitting_model_name                                                as 型号,
        cast(
                min(dmcf.fee_price / dmcf.accepted_count) AS DECIMAL(18, 2))   AS 最低价,
        cast((
            sum(dmcf.fee_price) / sum(dmcf.accepted_count)) AS DECIMAL(18, 2)) AS 平均价,
        cast(
-               max(dmcf.fee_price / dmcf.accepted_count) AS DECIMAL(18, 2))   AS 最高价
+               max(dmcf.fee_price / dmcf.accepted_count) AS DECIMAL(18, 2))   AS 最高价,
+       dmcf.service_station_city                                              as 城市,
+       ''                                                                     as 服务站,
+       dmcf.fitting_name                                                      as 配件,
+       dmcf.fitting_brand                                                     as 品牌,
+       dmcf.fitting_model_name                                                as 型号
 FROM dwd_maint_order_accepted_cost_fee_f dmcf
 WHERE dmcf.completed_time > '2023-01-01'
   AND dmcf.maint_fee_type = '配件费'
@@ -89,17 +89,17 @@ WHERE dmcf.completed_time > '2023-01-01'
   AND dmcf.fitting_model_name = '{fitting_model_name}'
 union all
 SELECT '同品牌不同型号，同市'                                                  as 维度,
-       dmcf.service_station_city                                              as 城市,
-       ''                                                                     as 服务站,
-       dmcf.fitting_name                                                      as 配件,
-       dmcf.fitting_brand                                                     as 品牌,
-       concat('非', dmcf.fitting_model_name)                                  as 型号,
        cast(
                min(dmcf.fee_price / dmcf.accepted_count) AS DECIMAL(18, 2))   AS 最低价,
        cast((
            sum(dmcf.fee_price) / sum(dmcf.accepted_count)) AS DECIMAL(18, 2)) AS 平均价,
        cast(
-               max(dmcf.fee_price / dmcf.accepted_count) AS DECIMAL(18, 2))   AS 最高价
+               max(dmcf.fee_price / dmcf.accepted_count) AS DECIMAL(18, 2))   AS 最高价,
+       dmcf.service_station_city                                              as 城市,
+       ''                                                                     as 服务站,
+       dmcf.fitting_name                                                      as 配件,
+       dmcf.fitting_brand                                                     as 品牌,
+       concat('非', dmcf.fitting_model_name)                                  as 型号
 FROM dwd_maint_order_accepted_cost_fee_f dmcf
 WHERE dmcf.completed_time > '2023-01-01'
   AND dmcf.maint_fee_type = '配件费'
@@ -110,17 +110,17 @@ WHERE dmcf.completed_time > '2023-01-01'
 union all
 
 SELECT '同品牌同型号，所有'                                                    as 维度,
-       ''                                                                     as 城市,
-       ''                                                                     as 服务站,
-       dmcf.fitting_name                                                      as 配件,
-       dmcf.fitting_brand                                                     as 品牌,
-       dmcf.fitting_model_name                                                as 型号,
        cast(
                min(dmcf.fee_price / dmcf.accepted_count) AS DECIMAL(18, 2))   AS 最低价,
        cast((
            sum(dmcf.fee_price) / sum(dmcf.accepted_count)) AS DECIMAL(18, 2)) AS 平均价,
        cast(
-               max(dmcf.fee_price / dmcf.accepted_count) AS DECIMAL(18, 2))   AS 最高价
+               max(dmcf.fee_price / dmcf.accepted_count) AS DECIMAL(18, 2))   AS 最高价,
+       ''                                                                     as 城市,
+       ''                                                                     as 服务站,
+       dmcf.fitting_name                                                      as 配件,
+       dmcf.fitting_brand                                                     as 品牌,
+       dmcf.fitting_model_name                                                as 型号
 FROM dwd_maint_order_accepted_cost_fee_f dmcf
 WHERE dmcf.completed_time > '2023-01-01'
   AND dmcf.maint_fee_type = '配件费'
@@ -129,17 +129,17 @@ WHERE dmcf.completed_time > '2023-01-01'
   AND dmcf.fitting_model_name = '{fitting_model_name}'
 union all
 SELECT '同品牌不同型号，所有'                                                  as 维度,
-       ''                                                                     as 城市,
-       ''                                                                     as 服务站,
-       dmcf.fitting_name                                                      as 配件,
-       dmcf.fitting_brand                                                     as 品牌,
-       concat('非', dmcf.fitting_model_name)                                  as 型号,
        cast(
                min(dmcf.fee_price / dmcf.accepted_count) AS DECIMAL(18, 2))   AS 最低价,
        cast((
            sum(dmcf.fee_price) / sum(dmcf.accepted_count)) AS DECIMAL(18, 2)) AS 平均价,
        cast(
-               max(dmcf.fee_price / dmcf.accepted_count) AS DECIMAL(18, 2))   AS 最高价
+               max(dmcf.fee_price / dmcf.accepted_count) AS DECIMAL(18, 2))   AS 最高价,
+       ''                                                                     as 城市,
+       ''                                                                     as 服务站,
+       dmcf.fitting_name                                                      as 配件,
+       dmcf.fitting_brand                                                     as 品牌,
+       concat('非', dmcf.fitting_model_name)                                  as 型号
 FROM dwd_maint_order_accepted_cost_fee_f dmcf
 WHERE dmcf.completed_time > '2023-01-01'
   AND dmcf.maint_fee_type = '配件费'
