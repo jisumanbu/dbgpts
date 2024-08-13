@@ -37,6 +37,7 @@ from .chat_database import (
 )
 from .chat_knowledge import ChatKnowledgeOperator
 from .chat_fitting_price import QueryFittingPriceOperator
+from dbgpt._private.config import Config
 
 _DEFAULT_INTENT_DEFINITIONS = """**********************************
 intent: Query Fitting Price
@@ -294,14 +295,16 @@ with DAG("dbgpts_cosla_copilot_intent_detection_dag") as dag:
         methods="POST",
         streaming_predict_func=lambda x: x.stream,
     )
-    # llm_client = TongyiLLMClient(model=os.getenv("MODEL"), api_key=os.getenv("OPENAI_API_KEY"))
-    llm_client = None
+    # 使用qwen-turbo提高速度
+    cfg = Config()
+    llm_client_quick = TongyiLLMClient(model="qwen-turbo", api_key=cfg.tongyi_proxy_api_key)
+    llm_client_rational = TongyiLLMClient(model="qwen-max", api_key=cfg.tongyi_proxy_api_key)
     storage = InMemoryStorage()
     request_handle_task = RequestHandleOperator(storage)
     intent_task = CustIntentDetectionOperator(
         intent_definitions=_DEFAULT_INTENT_DEFINITIONS,
         examples=EXAMPLES_STRING,
-        llm_client=llm_client,
+        llm_client=llm_client_quick,
     )
     intent_detection_task = IntentDetectionBranchOperator(end_task_name="end")
     chat_normal_task = ChatNormalOperator()
@@ -318,7 +321,7 @@ with DAG("dbgpts_cosla_copilot_intent_detection_dag") as dag:
     trigger >> request_handle_task >> intent_task >> intent_detection_task
 
     # Chat normal task
-    (intent_detection_task >> chat_normal_task >> StreamingLLMOperator(llm_client) >> join_task)
+    (intent_detection_task >> chat_normal_task >> StreamingLLMOperator(llm_client_rational) >> join_task)
     # Query Fitting Price
     (
             intent_detection_task
@@ -330,7 +333,7 @@ with DAG("dbgpts_cosla_copilot_intent_detection_dag") as dag:
             intent_detection_task
             # generate SQL by LLM
             >> chat_database_task
-            >> LLMOperator(llm_client)
+            >> LLMOperator(llm_client_rational)
             # execute SQL
             >> sql_parse_task
             >> sql_chart_task
@@ -341,7 +344,7 @@ with DAG("dbgpts_cosla_copilot_intent_detection_dag") as dag:
     (
             intent_detection_task
             >> chat_knowledge_task
-            >> StreamingLLMOperator(llm_client)
+            >> StreamingLLMOperator(llm_client_rational)
             >> join_task
     )
     # End task, ask user for more information
