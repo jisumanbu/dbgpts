@@ -62,17 +62,14 @@ class QueryFittingPriceOperator(StreamifyAbsOperator[ModelRequest, str]):
         # 将column重命名
         #
         fitting_metadata_df_to_view = fitting_metadata_df.copy()
+        fitting_metadata_df_to_view.drop(columns=['maint_order_no', 'fitting_id', 'service_agency_id'], inplace=True)
         fitting_metadata_df_to_view = fitting_metadata_df_to_view.rename(columns={
-            'maint_order_no': ' 维保单号',
-            'fitting_id': '配件ID',
             'fitting_name': '配件名',
             'fitting_brand': '品牌',
             'fitting_model_name': '型号',
-            'service_agency_id': '服务站ID',
             'service_agency_name': '服务站',
             'service_station_city': '城市',
         })
-        fitting_metadata_df_to_view.drop(columns=['maint_order_no', 'fitting_id', 'service_agency_id'], inplace=True)
         fitting_metadata_view = await vis.display(chart=fitting_metadata_chat, data_df=fitting_metadata_df_to_view)
         result.append("配件相关信息:")
         result.append(fitting_metadata_view)
