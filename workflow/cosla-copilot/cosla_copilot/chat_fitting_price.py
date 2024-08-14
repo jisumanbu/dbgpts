@@ -62,7 +62,7 @@ class QueryFittingPriceOperator(StreamifyAbsOperator[ModelRequest, str]):
         # 将column重命名
         #
         fitting_metadata_df_to_view = fitting_metadata_df.copy()
-        fitting_metadata_df_to_view.rename(columns={
+        fitting_metadata_df_to_view = fitting_metadata_df_to_view.rename(columns={
             'maint_order_no': ' 维保单号',
             'fitting_id': '配件ID',
             'fitting_name': '配件名',
