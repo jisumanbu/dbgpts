@@ -40,8 +40,9 @@ class QueryFittingPriceOperator(StreamifyAbsOperator[ModelRequest, str]):
 
         # 查询配件相关元数据
         time_before_get_connector = datetime.now()
-        oltp_connector, olap_connector = await asyncio.gather(
+        oltp_connector, olap_connector_1, olap_connector_2 = await asyncio.gather(
             self.blocking_func_to_async(cfg.local_db_manager.get_connector, shinwellvms_m),
+            self.blocking_func_to_async(cfg.local_db_manager.get_connector, dw_shinwell),
             self.blocking_func_to_async(cfg.local_db_manager.get_connector, dw_shinwell)
         )
         print(f"Get connector cost: {datetime.now() - time_before_get_connector}")
@@ -82,8 +83,8 @@ class QueryFittingPriceOperator(StreamifyAbsOperator[ModelRequest, str]):
         fitting_price_sql = query_standard_fitting_price.format(**fitting_metadata)
 
         price_df, standard_price_df = await asyncio.gather(
-            self.blocking_func_to_async(olap_connector.run_to_df, query_price_sql),
-            self.blocking_func_to_async(olap_connector.run_to_df, fitting_price_sql)
+            self.blocking_func_to_async(olap_connector_1.run_to_df, query_price_sql),
+            self.blocking_func_to_async(olap_connector_2.run_to_df, fitting_price_sql)
         )
 
         matrix_price_chat = {
