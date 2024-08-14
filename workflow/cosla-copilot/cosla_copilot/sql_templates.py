@@ -5,6 +5,7 @@ select a.maint_order_no,
        msf0.fitting_brand_name AS fitting_brand,
        hf.fitting_model_name   AS fitting_model_name,
        station.agency_id       AS service_agency_id,
+       station.agency_name       AS service_agency_name,
        ifnull(ifnull((select city.city_name
                       from city_code dis
                                left join city_code cityProvince on cityProvince.city_code = CONCAT(left(dis.city_code, 2), '0000')

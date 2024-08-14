@@ -1,23 +1,27 @@
 import asyncio
 from datetime import datetime
+from typing import AsyncIterator
 
-from dbgpt.core import ModelRequest
-from dbgpt.core.awel import MapOperator
+from dbgpt.core import ModelRequest, ModelOutput
+from dbgpt.core.awel import MapOperator, StreamifyAbsOperator
 from dbgpt.experimental.intent.base import IntentDetectionResponse
 
 _SHARE_DATA_DATABASE_NAME_KEY = "__database_name__"
 
 
-class QueryFittingPriceOperator(MapOperator[ModelRequest, str]):
+class QueryFittingPriceOperator(StreamifyAbsOperator[ModelRequest, str]):
     def __init__(self, task_name="query_fitting_price_sql_executor", **kwargs):
         super().__init__(task_name=task_name, **kwargs)
 
-    async def map(self, input_value: ModelRequest) -> str:
+    async def streamify(self, input_value: ModelRequest) -> AsyncIterator[str]:
         from dbgpt._private.config import Config
         from dbgpt.vis.tags.vis_chart import VisChart
         from .sql_templates import query_price_sql_template
         from .sql_templates import query_standard_fitting_price
         from .sql_templates import query_fitting_metadata
+
+        yield "正在查询配件价格..."
+        result = []
 
         start_time = datetime.now()
         print(f"QueryFittingPriceOperator.map start @ {datetime.now()}")
@@ -42,10 +46,36 @@ class QueryFittingPriceOperator(MapOperator[ModelRequest, str]):
         )
         print(f"Get connector cost: {datetime.now() - time_before_get_connector}")
 
-        fitting_metadata_df = await self.blocking_func_to_async(oltp_connector.run_to_df, query_fitting_metadata.format(maint_order=maint_order, fitting_name=fitting_name))
+        fitting_metadata_sql = query_fitting_metadata.format(maint_order=maint_order, fitting_name=fitting_name)
+        fitting_metadata_df = await self.blocking_func_to_async(oltp_connector.run_to_df, fitting_metadata_sql)
 
         if fitting_metadata_df.empty:
             raise ValueError("未找到配件相关信息")
+
+        vis = VisChart()
+        fitting_metadata_chat = {
+            "display_type": "response_table",
+            "sql": fitting_metadata_sql.replace("\n", " "),
+            "thoughts": ""
+        }
+        # 将column重命名
+        #
+        fitting_metadata_df_to_view = fitting_metadata_df.copy()
+        fitting_metadata_df_to_view.rename(columns={
+            'maint_order_no': ' 维保单号',
+            'fitting_id': '配件ID',
+            'fitting_name': '配件名',
+            'fitting_brand': '品牌',
+            'fitting_model_name': '型号',
+            'service_agency_id': '服务站ID',
+            'service_agency_name': '服务站',
+            'service_station_city': '城市',
+        })
+        fitting_metadata_df_to_view.drop(columns=['maint_order_no', 'fitting_id', 'service_agency_id'], inplace=True)
+        fitting_metadata_view = await vis.display(chart=fitting_metadata_chat, data_df=fitting_metadata_df_to_view)
+        result.append("配件相关信息:")
+        result.append(fitting_metadata_view)
+        yield "\n".join(result)
 
         fitting_metadata = fitting_metadata_df.iloc[0].to_dict()
         query_price_sql = query_price_sql_template.format(**fitting_metadata)
@@ -56,7 +86,7 @@ class QueryFittingPriceOperator(MapOperator[ModelRequest, str]):
             self.blocking_func_to_async(olap_connector.run_to_df, fitting_price_sql)
         )
 
-        chart_to_display = {
+        matrix_price_chat = {
             "display_type": "response_table",
             "sql": query_price_sql.replace("\n", " "),
             "thoughts": ""
@@ -67,8 +97,11 @@ class QueryFittingPriceOperator(MapOperator[ModelRequest, str]):
         else:
             standard_price = standard_price_df.iloc[0]['standardPrice']
 
+        result.append(standard_price)
+        yield "\n".join(result)
+
         print(f"QueryFittingPriceOperator.map end @ {datetime.now()}, cost: {datetime.now() - start_time}")
 
-        vis = VisChart()
-        price_view = await vis.display(chart=chart_to_display, data_df=price_df)
-        return standard_price + "\n" + price_view
+        matrix_price_view = await vis.display(chart=matrix_price_chat, data_df=price_df)
+        result.append(matrix_price_view)
+        yield "\n".join(result)
