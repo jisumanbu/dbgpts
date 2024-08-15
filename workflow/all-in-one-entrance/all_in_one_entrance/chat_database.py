@@ -145,6 +145,7 @@ class ChatDatabaseChartOperator(MapOperator[dict, str]):
         )
         vis = VisChart()
         cfg = Config()
+        cfg.SYSTEM_APP = self.system_app
         database: RDBMSConnector = cfg.local_db_manager.get_connector(db_name)
         sql = input_value.get("sql")
         data_df = await self.blocking_func_to_async(database.run_to_df, sql)
