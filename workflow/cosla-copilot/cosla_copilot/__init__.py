@@ -55,7 +55,7 @@ slots:
 **********************************
 intent: Chat With Knowledge
 task_name: chat_knowledge
-description_zh: 用于知识库对话的意图, 当你无法直接回答用户问题或者不知道如何回答时，可以将用户的问题匹配到知识库对话
+description_zh: 用于知识库对话的意图, 当你无法直接回答用户问题或者不知道如何回答时，可以将用户的问题匹配到知识库对话。槽位knowledge_name默认为：运营手册
 slots: 
 - Knowledge Name(knowledge_name): The name of the knowledge base
 **********************************
