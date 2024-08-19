@@ -47,12 +47,6 @@ slots:
 - Maintenance Order: 维保单号
 - Fitting Name: 配件名称
 **********************************
-intent: Chat With Database
-task_name: chat_database
-description_zh: 用于除查询配件价格外的数据库对话的意图（配件的使用情况也匹配到此意图），所有与数据查询SQL生成等相关的对话都会匹配到数据库对话。槽位database_name默认为：dw_shinwell
-slots: 
-- Database Name(database_name): The name of the database, default value is dw_shinwell
-**********************************
 intent: Chat With Knowledge
 task_name: chat_knowledge
 description_zh: 用于知识库对话的意图, 当你无法直接回答用户问题或者不知道如何回答时，可以将用户的问题匹配到知识库对话。槽位knowledge_name默认为：运营手册
@@ -63,6 +57,12 @@ intent: Normal Chat
 task_name: chat_normal
 description_zh: 与用户正常聊天，无需填充任何槽位，当无法匹配到其他意图时，会匹配到正常聊天意图
 slots: no need to fill any slots
+**********************************
+intent: Chat With Database
+task_name: chat_database
+description_zh: 用于数据库对话的意图，所有与数据查询SQL生成等相关的对话都会匹配到数据库对话
+slots: 
+- Database Name(database_name): The name of the database, default value is dw_shinwell
 """
 
 EXAMPLES = [
