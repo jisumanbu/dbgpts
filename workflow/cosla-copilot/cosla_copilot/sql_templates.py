@@ -1,5 +1,5 @@
 query_fitting_metadata = """
-select a.maint_order_no,
+  select a.maint_order_no,
        msf0.fitting_id,
        hf.fitting_name         AS fitting_name,
        msf0.fitting_brand_name AS fitting_brand,
@@ -25,7 +25,9 @@ from maint_order a
 where a.maint_order_no = '{maint_order}'
   and station.agency_name not like '%测试%'
   and station.agency_name NOT LIKE 'Test%'
-  and concat_ws('/', hf.fitting_name, msf0.fitting_brand_name, hf.fitting_model_name) = '{fitting_name}'
+  and e.maint_fee_type = 'FITTING_COST'
+  and (concat_ws('/', msf0.fitting_name, msf0.fitting_brand_name, if(msf0.fitting_model_name = '其他', null, msf0.fitting_model_name), msf0.fitting_model_remark) = '{fitting_name}'
+    or concat_ws('/', msf0.fitting_name, hf.fitting_description) = '{fitting_name}')
 """
 
 query_price_sql_template = """
