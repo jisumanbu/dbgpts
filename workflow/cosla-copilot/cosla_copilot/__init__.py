@@ -42,7 +42,7 @@ from dbgpt._private.config import Config
 _DEFAULT_INTENT_DEFINITIONS = """**********************************
 intent: Query Fitting Price
 task_name: query_fitting_price_sql_executor
-description_zh: 用于查询配件价格（历史最低价、最高价、平均价）。你必须严谨地识别这个意图，只有当用户直接地同时提及 "配件" 与 "价格" 两个关键字时，你才可以匹配到该意图
+description_zh: 用于查询配件价格（历史最低价、最高价、平均价）。你必须严谨地识别这个意图，只有当用户直接地同时提及 "配件" 与 "价格" 两个关键字时，你才可以匹配到该意图。'/'分隔符是槽位Fitting Name的一部分
 slots: 
 - Maintenance Order: 维保单号
 - Fitting Name: 配件名称
@@ -91,17 +91,12 @@ EXAMPLES = [
         },
     },
     {
-        "user": "My database is case_1_student_manager.",
+        "user": "查询配件价格。维保单号：712024081914569951，配件：挂车桥轮壳盖/大众品牌/BPW/",
         "assistant": {
-            "intent": "Chat With Database",
-            "thought": "According to the user's input and historical dialogue information, the user provided the database name case_1_student_manager, matched to the Chat With Database intent, not need to fill any slots, the language of user question is english, i generate `user_input` in english",
-            "task_name": "chat_database",
-            "slots": {
-                "database_name": "case_1_student_manager",
-            },
-            "ask_user": "",
-            "user_input": "Database name is case_1_student_manager, please write a SQL to query the names, majors and grades of all students, in descending order.",
-        },
+            "intent": "Query Fitting Price",
+            "thought": "User requested to query fitting price, mentioned '配件' and '价格', matched to the Query Fitting Price intent, filled 'Maintenance Order' and 'Fitting Name' slots based on the historical conversation.",
+            "task_name": "query_fitting_price_sql_executor", "slots": {"Maintenance Order": "712024081914569951", "Fitting Name": "挂车桥轮壳盖/大众品牌/BPW/"}, "ask_user": "",
+            "user_input": "查询配件价格。维保单号：712024081914569951，配件：挂车桥轮壳盖/大众品牌/BPW/"},
     },
     {
         "user": "我的数据是 case_1_student_manager, 请写一个SQL查询所有学生的姓名，专业和成绩，按降序排列。",
