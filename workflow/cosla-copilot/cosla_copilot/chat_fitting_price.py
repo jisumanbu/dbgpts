@@ -5,6 +5,8 @@ from typing import AsyncIterator
 from dbgpt.core import ModelRequest, ModelOutput
 from dbgpt.core.awel import MapOperator, StreamifyAbsOperator
 from dbgpt.experimental.intent.base import IntentDetectionResponse
+from dbgpt.datasource.rdbms.conn_mysql import OltpMySQLConnectionPool
+from dbgpt.datasource.rdbms.conn_mysql import OlapMySQLConnectionPool
 
 _SHARE_DATA_DATABASE_NAME_KEY = "__database_name__"
 
@@ -40,11 +42,9 @@ class QueryFittingPriceOperator(StreamifyAbsOperator[ModelRequest, str]):
 
         # 查询配件相关元数据
         time_before_get_connector = datetime.now()
-        oltp_connector, olap_connector_1, olap_connector_2 = await asyncio.gather(
-            self.blocking_func_to_async(cfg.local_db_manager.get_connector, shinwellvms_m),
-            self.blocking_func_to_async(cfg.local_db_manager.get_connector, dw_shinwell),
-            self.blocking_func_to_async(cfg.local_db_manager.get_connector, dw_shinwell)
-        )
+        oltp_connector = self.system_app.get_component("dbgpt_connection_pool_oltp", OltpMySQLConnectionPool).create_connector()
+        olap_connector_1 = self.system_app.get_component("dbgpt_connection_pool_olap", OlapMySQLConnectionPool).create_connector()
+        olap_connector_2 = self.system_app.get_component("dbgpt_connection_pool_olap", OlapMySQLConnectionPool).create_connector()
         print(f"Get connector cost: {datetime.now() - time_before_get_connector}")
 
         fitting_metadata_sql = query_fitting_metadata.format(maint_order=maint_order, fitting_name=fitting_name)
