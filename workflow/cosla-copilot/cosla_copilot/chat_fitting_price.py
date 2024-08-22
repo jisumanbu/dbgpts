@@ -41,14 +41,10 @@ class QueryFittingPriceOperator(StreamifyAbsOperator[ModelRequest, str]):
         print(f"maint_order: {maint_order}, fitting_name: {fitting_name}")
 
         # 查询配件相关元数据
-        time_before_get_connector = datetime.now()
-        oltp_connector = self.system_app.get_component("dbgpt_connection_pool_oltp", OltpMySQLConnectionPool).create_connector()
-        olap_connector_1 = self.system_app.get_component("dbgpt_connection_pool_olap", OlapMySQLConnectionPool).create_connector()
-        olap_connector_2 = self.system_app.get_component("dbgpt_connection_pool_olap", OlapMySQLConnectionPool).create_connector()
-        print(f"Get connector cost: {datetime.now() - time_before_get_connector}")
-
         fitting_metadata_sql = query_fitting_metadata.format(maint_order=maint_order, fitting_name=fitting_name)
-        fitting_metadata_df = await self.blocking_func_to_async(oltp_connector.run_to_df, fitting_metadata_sql)
+        # fitting_metadata_df = await self.blocking_func_to_async(oltp_connector.run_to_df, fitting_metadata_sql)
+        fitting_metadata_df = self.system_app.get_component("dbgpt_connection_pool_oltp", OltpMySQLConnectionPool).create_connector().run_to_df(fitting_metadata_sql)
+        print(f"finish query fitting metadata, cost: {datetime.now() - start_time}")
 
         if fitting_metadata_df.empty:
             raise ValueError("未找到配件相关信息")
@@ -80,8 +76,8 @@ class QueryFittingPriceOperator(StreamifyAbsOperator[ModelRequest, str]):
         fitting_price_sql = query_standard_fitting_price.format(**fitting_metadata)
 
         price_df, standard_price_df = await asyncio.gather(
-            self.blocking_func_to_async(olap_connector_1.run_to_df, query_price_sql),
-            self.blocking_func_to_async(olap_connector_2.run_to_df, fitting_price_sql)
+            self.blocking_func_to_async(self.system_app.get_component("dbgpt_connection_pool_olap", OlapMySQLConnectionPool).create_connector().run_to_df, query_price_sql),
+            self.blocking_func_to_async(self.system_app.get_component("dbgpt_connection_pool_olap", OlapMySQLConnectionPool).create_connector().run_to_df, fitting_price_sql)
         )
 
         matrix_price_chat = {
