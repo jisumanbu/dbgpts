@@ -73,7 +73,7 @@ class ChatKnowledgeOperator(MapOperator[ModelRequest, ModelRequest]):
             vector_store_type=cfg.VECTOR_STORE_TYPE, vector_store_config=config
         )
         embedding_retriever = EmbeddingRetriever(
-            top_k=5,
+            top_k=10,
             index_store=vector_store_connector.client,
         )
         chunks = await embedding_retriever.aretrieve_with_scores(entity_name_input, 0.3)
