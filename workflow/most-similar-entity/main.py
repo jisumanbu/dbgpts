@@ -10,11 +10,11 @@ async def main():
     from most_similar_entity import dag
 
     req = CommonLLMHttpRequestBody(
-        model="qwen-turbo",
+        # model="qwen-turbo",
         # model="qwen-max",
-        # model="gpt-3.5-turbo",
+        model="gpt-4o-mini",
         # messages="查询配件价格, 维保单号：712024072916256345， 配件：齿轮油/欧曼原厂/85W-90",
-        messages="工时：更换雨刮电机",
+        messages="工时：吊装变速箱",
         conv_uid="123456",
         stream=False,
         extra={

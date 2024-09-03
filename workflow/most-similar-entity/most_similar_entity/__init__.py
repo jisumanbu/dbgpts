@@ -1,5 +1,5 @@
 """all-in-one-entrance flow package"""
-
+import os
 from typing import List
 
 from dbgpt.core import (
@@ -15,6 +15,9 @@ from dbgpt.core.awel.trigger.http_trigger import (
     CommonLLMHttpTrigger,
 )
 from dbgpt.core.operators import BaseConversationOperator
+from dbgpt.model.operators import LLMOperator
+from dbgpt.model.proxy.llms.chatgpt import OpenAILLMClient
+from dbgpt.model.proxy.llms.tongyi import TongyiLLMClient
 
 from .chat_knowledge import ChatKnowledgeOperator
 
@@ -74,6 +77,15 @@ with DAG("dbgpts_find_most_similar_entity_dag") as dag:
     request_handle_task = RequestHandleOperator(storage)
     chat_knowledge_task = ChatKnowledgeOperator()
     join_task = JoinOperator(combine_function=join_func)
+    # llm_client_quick = OpenAILLMClient(
+    #     model_alias="gpt-4o-mini",
+    #     # api_base=os.getenv("OPENAI_API_BASE"),
+    #     api_base="http://openai-proxy-openai-proxy-qaauardwwh.us-west-1.fcapp.run/v1",
+    #     api_key=os.getenv("OPENAI_API_KEY"),
+    # )
+    from dbgpt._private.config import Config
+    cfg = Config()
+    llm_client_quick = TongyiLLMClient(model="qwen-turbo", api_key=cfg.tongyi_proxy_api_key)
 
     trigger >> request_handle_task
 
@@ -81,5 +93,6 @@ with DAG("dbgpts_find_most_similar_entity_dag") as dag:
     (
             request_handle_task
             >> chat_knowledge_task
+            >> LLMOperator(llm_client_quick)
             >> join_task
     )
