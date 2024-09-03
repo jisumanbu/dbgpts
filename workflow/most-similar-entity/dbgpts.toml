@@ -1,0 +1,13 @@
+[flow]
+label = "Most Similar Entity"
+name = "most_similar_entity"
+version = "0.1.0"
+description = "find the most similar entity of workinghour, fitting or fault"
+authors = []
+#definition_type = "json"
+definition_type = "python"
+
+[python_config]
+
+[json_config]
+#file_path = "definition/flow_definition.json"
