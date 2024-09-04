@@ -28,6 +28,7 @@ from dbgpt.experimental.intent.operators import (
     IntentDetectionOperator,
 )
 from dbgpt.model.operators import LLMOperator, StreamingLLMOperator
+from dbgpt.model.proxy.llms.chatgpt import OpenAILLMClient
 from dbgpt.model.proxy.llms.tongyi import TongyiLLMClient
 
 from .chat_database import (
@@ -62,7 +63,7 @@ intent: Chat With Database
 task_name: chat_database
 description_zh: 用于数据库对话的意图，所有与数据查询SQL生成等相关的对话都会匹配到数据库对话
 slots: 
-- Database Name(database_name): The name of the database, default value is dw_shinwell
+- Database Name(database_name): The name of the database, default value is shinwellvms_m
 """
 
 EXAMPLES = [
@@ -84,7 +85,7 @@ EXAMPLES = [
             "thought": "User asked to write a SQL to query the names, majors and grades of all students, in descending order, matched to the Chat With Database intent, need to fill the Database Name slot, the language of user question is english, i generate `ask_user` in english",
             "task_name": "chat_database",
             "slots": {
-                "database_name": "",
+                "database_name": "shinwellvms_m",
             },
             "ask_user": "Please provide the name of the database.",
             "user_input": "Write a SQL to query the names, majors and grades of all students, in descending order.",
@@ -105,7 +106,7 @@ EXAMPLES = [
             "thought": "User provided the database name case_1_student_manager, matched to the Chat With Database intent, not need to fill any slots, the language of user question is chinese, i generate `user_input` in chinese",
             "task_name": "chat_database",
             "slots": {
-                "database_name": "case_1_student_manager",
+                "database_name": "shinwellvms_m",
             },
             "ask_user": "",
             "user_input": "数据库是 case_1_student_manager, 请写一个SQL查询所有学生的姓名，专业和成绩，按降序排列。",
@@ -293,6 +294,12 @@ with DAG("dbgpts_cosla_copilot_intent_detection_dag") as dag:
     # 使用qwen-turbo提高速度
     cfg = Config()
     llm_client_quick = TongyiLLMClient(model="qwen-turbo", api_key=cfg.tongyi_proxy_api_key)
+    # llm_client_quick = OpenAILLMClient(
+    #     model_alias="gpt-4o",
+    #     # api_base=os.getenv("OPENAI_API_BASE"),
+    #     api_base="http://openai-proxy-openai-proxy-qaauardwwh.us-west-1.fcapp.run/v1",
+    #     api_key=os.getenv("OPENAI_API_KEY"),
+    # )
     llm_client_rational = TongyiLLMClient(model="qwen-max", api_key=cfg.tongyi_proxy_api_key)
     storage = InMemoryStorage()
     request_handle_task = RequestHandleOperator(storage)
