@@ -5,6 +5,7 @@ from dbgpt.core.awel import CommonLLMHttpRequestBody
 
 logger = logging.getLogger(__name__)
 
+biz_env="dev",
 
 async def main():
     from most_similar_entity import dag
@@ -14,10 +15,11 @@ async def main():
         # model="qwen-max",
         model="gpt-4o-mini",
         # messages="查询配件价格, 维保单号：712024072916256345， 配件：齿轮油/欧曼原厂/85W-90",
-        messages="工时：吊装变速箱",
+        messages="工时：更换机油",
         conv_uid="123456",
         stream=False,
         extra={
+            "biz_env": "dev"
             # "space": "my_knowledge_space",
             # "db_name": "dbgpt_test",
             # "tmp_dir_path": "/Users/jliu/git/ai/dbgpts/output",
