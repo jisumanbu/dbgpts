@@ -70,7 +70,11 @@ def join_func(*args):
 
 class AppendCandidatesOperator(MapOperator[ModelOutput, ModelOutput]):
     async def map(self, llm_output: ModelOutput) -> ModelOutput:
-        electee = json.loads(llm_output.text)
+        try:
+            electee = json.loads(llm_output.text.replace('```json', '').replace('```', '').strip())
+        except Exception as e:
+            print(f"Error decoding JSON: {llm_output.text}")
+            raise e
         print(f"type(electee): {type(electee)}")
         if not isinstance(electee, dict):
             print(f"electee: {electee}")
