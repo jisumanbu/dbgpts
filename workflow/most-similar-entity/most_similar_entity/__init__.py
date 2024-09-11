@@ -1,4 +1,5 @@
 """all-in-one-entrance flow package"""
+import json
 import os
 from typing import List
 
@@ -8,7 +9,7 @@ from dbgpt.core import (
     ModelMessage,
     ModelRequest,
     StorageConversation,
-    StorageInterface, )
+    StorageInterface, ModelOutput, )
 from dbgpt.core.awel import DAG, JoinOperator, MapOperator, is_empty_data
 from dbgpt.core.awel.trigger.http_trigger import (
     CommonLLMHttpRequestBody,
@@ -67,6 +68,23 @@ def join_func(*args):
     return None
 
 
+class AppendCandidatesOperator(MapOperator[ModelOutput, ModelOutput]):
+    async def map(self, llm_output: ModelOutput) -> ModelOutput:
+        electee = json.loads(llm_output.text)
+
+        candidates = await self.current_dag_context.get_from_share_data("CANDIDATES")
+        for candidate in candidates:
+            if electee["id"] == candidate["id"]:
+                electee = candidate.copy()
+                electee["candidates"] = candidates
+                original_input = await self.current_dag_context.get_from_share_data("share_data_key_model_request_context")
+                electee['user_input'] = original_input.messages
+                # llm_output.text = json.dumps(electee, ensure_ascii=False, indent=4, separators=(",", ":"))
+                llm_output.text = json.dumps(electee, ensure_ascii=False, indent=4)
+                break
+        return llm_output
+
+
 with DAG("dbgpts_find_most_similar_entity_dag") as dag:
     trigger = CommonLLMHttpTrigger(
         "/dbgpts/most-similar-entity",
@@ -84,6 +102,7 @@ with DAG("dbgpts_find_most_similar_entity_dag") as dag:
     #     api_key=os.getenv("OPENAI_API_KEY"),
     # )
     from dbgpt._private.config import Config
+
     cfg = Config()
     llm_client_quick = TongyiLLMClient(model="qwen-turbo", api_key=cfg.tongyi_proxy_api_key)
 
@@ -94,5 +113,6 @@ with DAG("dbgpts_find_most_similar_entity_dag") as dag:
             request_handle_task
             >> chat_knowledge_task
             >> LLMOperator(llm_client_quick)
+            >> AppendCandidatesOperator()
             >> join_task
     )

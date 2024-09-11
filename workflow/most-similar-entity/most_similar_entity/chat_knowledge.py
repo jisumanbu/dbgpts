@@ -84,6 +84,23 @@ class ChatKnowledgeOperator(MapOperator[ModelRequest, ModelRequest]):
             index_store=vector_store_connector.client,
         )
         chunks = await embedding_retriever.aretrieve_with_scores(entity_name_input, 0.3)
+
+        # save candidates into share data
+        candidates = []
+        for index, chunk in enumerate(chunks):
+            # 工时ID: 20000149，工时名称: 更换机油滤清器（含机油加注）
+            raw_candidate = chunk.content.replace("\n", "，")
+            candidate = {}
+            snippets = raw_candidate.split("，")
+            candidate['id'] = snippets[0].split(": ")[1]
+            candidate['name'] = snippets[1].split(": ")[1]
+            candidate['score'] = chunk.score
+            candidate['top_k'] = index
+            candidates.append(candidate)
+        await self.current_dag_context.save_to_share_data(
+            "CANDIDATES", candidates
+        )
+
         similar_entities = "\n".join([doc.content.replace("\n", "，") for doc in chunks])
         print(similar_entities)
 
@@ -100,21 +117,3 @@ class ChatKnowledgeOperator(MapOperator[ModelRequest, ModelRequest]):
         request = input_value.copy()
         request.messages = model_messages
         return request
-
-        # 工时ID: 20000110 工时名称: 更换雨刮器电机总成
-        # result = {}
-        # if chunks:
-        #     if entity_type == "工时":
-        #         splits = chunks[0].content.split("工时名称: ")
-        #         result['entity_name'] = splits[1]
-        #         result['entity_id'] = splits[0].split("工时ID: ")[1].strip()
-        #     elif entity_type == "配件":
-        #         splits = chunks[0].content.split("配件名称: ")
-        #         result['entity_name'] = splits[1]
-        #         result['entity_id'] = splits[0].split("配件ID: ")[1].strip()
-        #     elif entity_type == "故障":
-        #         splits = chunks[0].content.split("故障名称: ")
-        #         result['entity_name'] = splits[1]
-        #         result['entity_id'] = splits[0].split("故障ID: ")[1].strip()
-        #
-        # return result
