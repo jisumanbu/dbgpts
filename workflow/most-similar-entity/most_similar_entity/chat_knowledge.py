@@ -10,8 +10,8 @@ from dbgpt.core import (
 from dbgpt.core.awel import MapOperator
 
 _DEFAULT_TEMPLATE = """你是一名卡车修理工，你熟知各种{{entity_type}}。
-现在你的工作是：根据用户输入的{{entity_type}}，从标准{{entity_type}}里选出与之最接近的。
-你的回答必须严格遵守json格式，且能被Python json.loads解析，没有最接近的话则直接返回null。
+现在你的工作是：根据用户输入的{{entity_type}}，从标准{{entity_type}}里选出与之最接近的一个。
+你的回答必须严格遵守json格式，且能被Python json.loads解析，
 返回值参考如下示例：
 {
     "id": "20000842",

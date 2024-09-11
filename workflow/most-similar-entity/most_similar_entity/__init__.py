@@ -71,6 +71,12 @@ def join_func(*args):
 class AppendCandidatesOperator(MapOperator[ModelOutput, ModelOutput]):
     async def map(self, llm_output: ModelOutput) -> ModelOutput:
         electee = json.loads(llm_output.text)
+        print(f"type(electee): {type(electee)}")
+        if not isinstance(electee, dict):
+            print(f"electee: {electee}")
+            if isinstance(electee, list):
+                print(f"取第一个，electee[0]: {electee[0]}")
+                electee = electee[0]
 
         candidates = await self.current_dag_context.get_from_share_data("CANDIDATES")
         for candidate in candidates:
