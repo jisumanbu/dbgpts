@@ -52,7 +52,7 @@ intent: Chat With Knowledge
 task_name: chat_knowledge
 description_zh: 用于知识库对话的意图, 当你无法直接回答用户问题或者不知道如何回答时，可以将用户的问题匹配到知识库对话。槽位knowledge_name默认为：运营手册
 slots: 
-- Knowledge Name(knowledge_name): The name of the knowledge base
+- Knowledge Name(knowledge_name): 运营手册
 **********************************
 intent: Normal Chat
 task_name: chat_normal
@@ -113,16 +113,14 @@ EXAMPLES = [
         },
     },
     {
-        "user": "What is the AWEL?",
+        "user": "What is the 配件?",
         "assistant": {
             "intent": "Chat With Knowledge",
-            "thought": "User asked what is the AWEL, can't answer this question directly, matched to the Chat With Knowledge intent, need to fill the Knowledge Name slot, the language of user question is english, i generate `ask_user` in english",
+            "thought": "User asked what is the 配件, can't answer this question directly, matched to the Chat With Knowledge intent, the language of user question is english, i generate `ask_user` in english",
             "task_name": "chat_knowledge",
             "slots": {
-                "knowledge_name": "",
-            },
-            "ask_user": "I'm sorry, I can't answer this question directly. please provide the name of the knowledge base.",
-            "user_input": "What is the AWEL?",
+                "knowledge_name": "运营手册",
+            }
         },
     },
 ]
@@ -168,7 +166,7 @@ class RequestHandleOperator(
         await self.current_dag_context.save_to_share_data(
             self.SHARE_DATA_KEY_MODEL_REQUEST_CONTEXT, input_value
         )
-        return ModelRequest.build_request(input_value.model, messages)
+        return ModelRequest.build_request('gpt-4o', messages)
 
 
 class CustIntentDetectionOperator(BaseConversationOperator, IntentDetectionOperator):

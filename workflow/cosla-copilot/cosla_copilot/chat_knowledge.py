@@ -47,7 +47,7 @@ class ChatKnowledgeOperator(MapOperator[ModelRequest, ModelRequest]):
         user_input = ic.user_input or input_value.messages[-1].content
         knowledge_name = ic.slots.get("knowledge_name")
         if not knowledge_name:
-            raise ValueError("Knowledge name is required.")
+            knowledge_name = "运营手册"
 
         embedding_factory = self.system_app.get_component(
             "embedding_factory", EmbeddingFactory
@@ -88,5 +88,6 @@ class ChatKnowledgeOperator(MapOperator[ModelRequest, ModelRequest]):
         messages = prompt.format_messages(**input_values)
         model_messages = ModelMessage.from_base_messages(messages)
         request = input_value.copy()
+        request.model = 'gpt-4o'
         request.messages = model_messages
         return request
