@@ -297,7 +297,7 @@ with DAG("dbgpts_cosla_copilot_intent_detection_dag") as dag:
     llm_client_quick = OpenAILLMClient(
         model_alias="gpt-4o",
         # api_base=os.getenv("OPENAI_API_BASE"),
-        api_base="https://openai-proxy-openai-proxy-qaauardwwh.us-west-1.fcapp.run/v1",
+        api_base="http://openai-proxy-openai-proxy-qaauardwwh.us-west-1.fcapp.run/v1",
         api_key=os.getenv("OPENAI_API_KEY"),
     )
     # llm_client_rational = TongyiLLMClient(model="qwen-max", api_key=cfg.tongyi_proxy_api_key)
