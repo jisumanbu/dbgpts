@@ -8,7 +8,6 @@ query_fitting_metadata = """
        station.agency_name       AS service_agency_name,
        ifnull(ifnull((select city.city_name
                       from city_code dis
-                               left join city_code cityProvince on cityProvince.city_code = CONCAT(left(dis.city_code, 2), '0000')
                                left join city_code city on city.city_code = CONCAT(left(dis.city_code, 4), '00')
                       where cast(right(dis.city_code, 2) as int) > 0
                         and dis.city_code = llc.city_code),
