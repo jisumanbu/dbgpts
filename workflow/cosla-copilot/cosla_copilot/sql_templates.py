@@ -157,4 +157,6 @@ from dim_standard_fitting_model_scd
 where fitting_id = '{fitting_id}'
   and fitting_brand_name = '{fitting_brand}'
   and fitting_model_name = '{fitting_model_name}'
+order by dw_end_date desc 
+limit 1
 """
