@@ -114,7 +114,13 @@ with DAG("dbgpts_find_most_similar_entity_dag") as dag:
     from dbgpt._private.config import Config
 
     cfg = Config()
-    llm_client_quick = TongyiLLMClient(model="qwen-turbo", api_key=cfg.tongyi_proxy_api_key)
+    # llm_client_quick = TongyiLLMClient(model="qwen-turbo", api_key=cfg.tongyi_proxy_api_key)
+    llm_client_quick = OpenAILLMClient(
+        model_alias="gpt-4o",
+        # api_base=os.getenv("OPENAI_API_BASE"),
+        api_base="https://openai-proxy-openai-proxy-qaauardwwh.us-west-1.fcapp.run/v1",
+        api_key=os.getenv("OPENAI_API_KEY"),
+    )
 
     trigger >> request_handle_task
 
